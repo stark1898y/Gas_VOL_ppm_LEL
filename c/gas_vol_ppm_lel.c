@@ -2,8 +2,8 @@
  * @Author       : yzy
  * @Date         : 2023-02-20 15:55:43
  * @LastEditors: xt 1834031381@qq.com
- * @LastEditTime: 2023-07-24 14:51:24
- * @FilePath     : \Gas_VOL_ppm_LEL\c\gas_vol_ppm_lel.c
+ * @LastEditTime: 2023-08-11 14:45:41
+ * @FilePath: \undefinedc:\Users\XT\Desktop\Gas_VOL_ppm_LEL\c\gas_vol_ppm_lel.c
  * @Description  :  VOL、ppm、LEL
  *
  * Copyright (c) 2023 by yzy, All Rights Reserved.
@@ -175,8 +175,8 @@ void GasChangeOtherValue(int change_num, double gas_lel, double value)
 
     case kPpm:
         ppm = value;
+        vol = ppm / 10000;
         lel = vol / gas_lel;
-        vol = lel * gas_lel;
         break;
 
     default:
