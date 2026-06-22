@@ -1,5 +1,5 @@
 """
-可燃气体 VOL%、ppm、LEL 换算工具（支持 8 种常见可燃气体）
+可燃气体 %VOL、ppm、%LEL 换算工具（支持 8 种常见可燃气体）
 
 气体数据:
     甲烷(CH4)     LEL=5.0%  UEL=15.0%
@@ -12,8 +12,8 @@
     一氧化碳(CO)  LEL=12.5% UEL=74.2%
 
 公式:
-    1 VOL% = 10000 ppm
-    LEL% = VOL% / LEL(VOL%) * 100
+    1 %VOL = 10000 ppm
+    %LEL = %VOL / LEL(%VOL) * 100
 """
 
 import tkinter as tk
@@ -40,11 +40,11 @@ def calculate(gas_name, input_value, input_unit):
         ppm = input_value
         vol = ppm / 10000
         lel = vol / lel_limit * 100
-    elif input_unit == "LEL%":
+    elif input_unit == "%LEL":
         lel = input_value
         vol = lel * lel_limit / 100
         ppm = vol * 10000
-    else:  # VOL%
+    else:  # %VOL
         vol = input_value
         ppm = vol * 10000
         lel = vol / lel_limit * 100
@@ -55,7 +55,7 @@ def calculate(gas_name, input_value, input_unit):
 class GasConverterApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("可燃气体 VOL% / ppm / LEL 换算工具")
+        self.root.title("可燃气体 %VOL / ppm / %LEL 换算工具")
         self.root.geometry("420x420")
         self.root.resizable(False, False)
 
@@ -87,16 +87,16 @@ class GasConverterApp:
         self.entry_input.pack(side=tk.LEFT, padx=5)
 
         tk.Label(input_frame, text="单位:").pack(side=tk.LEFT)
-        self.unit_var = tk.StringVar(value="VOL%")
-        tk.OptionMenu(input_frame, self.unit_var, "VOL%", "ppm", "LEL%").pack(side=tk.LEFT)
+        self.unit_var = tk.StringVar(value="%VOL")
+        tk.OptionMenu(input_frame, self.unit_var, "%VOL", "ppm", "%LEL").pack(side=tk.LEFT)
 
         # 结果显示
         result_frame = tk.Frame(self.root)
         result_frame.pack(pady=10)
 
-        self.result_vol = self._create_result_row(result_frame, "VOL%:")
+        self.result_vol = self._create_result_row(result_frame, "%VOL:")
         self.result_ppm = self._create_result_row(result_frame, "ppm:")
-        self.result_lel = self._create_result_row(result_frame, "LEL%:")
+        self.result_lel = self._create_result_row(result_frame, "%LEL:")
 
         # 按钮
         btn_frame = tk.Frame(self.root)
@@ -140,7 +140,7 @@ class GasConverterApp:
             self._set_result(entry, "")
 
     def show_help(self):
-        help_text = """可燃气体 VOL% / ppm / LEL 换算工具
+        help_text = """可燃气体 %VOL / ppm / %LEL 换算工具
 
 支持 8 种常见可燃气体:
   甲烷(CH4)     LEL=5.0%  UEL=15.0%
@@ -153,12 +153,12 @@ class GasConverterApp:
   一氧化碳(CO)  LEL=12.5% UEL=74.2%
 
 公式:
-  1 VOL% = 10000 ppm
-  LEL% = VOL% / LEL(VOL%) x 100
+  1 %VOL = 10000 ppm
+  %LEL = %VOL / LEL(%VOL) x 100
 
 示例(甲烷):
-  10% LEL = 5.0% x 10% = 0.5 VOL% = 5000 ppm
-  100% LEL = 5.0 VOL% = 50000 ppm"""
+  10%LEL = 5.0% x 10% = 0.5%VOL = 5000 ppm
+  100%LEL = 5.0%VOL = 50000 ppm"""
         messagebox.showinfo("帮助", help_text)
 
 

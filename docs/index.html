@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>可燃气体 VOL% / ppm / LEL 换算工具</title>
+    <title>可燃气体 %VOL / ppm / %LEL 换算工具</title>
     <style>
         * {
             box-sizing: border-box;
@@ -259,7 +259,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>可燃气体 VOL% / ppm / LEL 换算工具</h1>
+        <h1>可燃气体 %VOL / ppm / %LEL 换算工具</h1>
         <p class="subtitle">支持甲烷、乙烷、丙烷等常见可燃气体的浓度单位互转</p>
         <div class="links">
             <a href="https://github.com/stark1898y/Gas_VOL_ppm_LEL" target="_blank">GitHub</a>
@@ -289,9 +289,9 @@
             <div class="form-item">
                 <label>输入单位</label>
                 <select id="inputUnit">
-                    <option value="vol">VOL%</option>
+                    <option value="vol">%VOL</option>
                     <option value="ppm">ppm</option>
-                    <option value="lel">LEL%</option>
+                    <option value="lel">%LEL</option>
                 </select>
             </div>
         </div>
@@ -303,7 +303,7 @@
 
         <div class="result-grid" id="resultGrid" style="display:none;">
             <div class="result-card">
-                <div class="label">VOL%</div>
+                <div class="label">%VOL</div>
                 <div class="value" id="resultVol">-</div>
                 <div class="unit">体积百分比</div>
             </div>
@@ -313,7 +313,7 @@
                 <div class="unit">百万分之一体积</div>
             </div>
             <div class="result-card">
-                <div class="label">LEL%</div>
+                <div class="label">%LEL</div>
                 <div class="value" id="resultLel">-</div>
                 <div class="unit">爆炸下限百分比</div>
             </div>
@@ -327,20 +327,20 @@
                     <tr>
                         <th>气体名称</th>
                         <th>分子式</th>
-                        <th>LEL (VOL%)</th>
-                        <th>UEL (VOL%)</th>
-                        <th>100% LEL =</th>
+                        <th>LEL (%VOL)</th>
+                        <th>UEL (%VOL)</th>
+                        <th>100%LEL =</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr><td>甲烷</td><td>CH4</td><td>5.0</td><td>15.0</td><td>5.0% VOL = 50000 ppm</td></tr>
-                    <tr><td>乙烷</td><td>C2H6</td><td>3.0</td><td>15.5</td><td>3.0% VOL = 30000 ppm</td></tr>
-                    <tr><td>丙烷</td><td>C3H8</td><td>2.1</td><td>9.5</td><td>2.1% VOL = 21000 ppm</td></tr>
-                    <tr><td>丁烷</td><td>C4H10</td><td>1.8</td><td>8.4</td><td>1.8% VOL = 18000 ppm</td></tr>
-                    <tr><td>氢气</td><td>H2</td><td>4.0</td><td>75.0</td><td>4.0% VOL = 40000 ppm</td></tr>
-                    <tr><td>乙烯</td><td>C2H4</td><td>2.7</td><td>36.0</td><td>2.7% VOL = 27000 ppm</td></tr>
-                    <tr><td>乙炔</td><td>C2H2</td><td>2.5</td><td>81.0</td><td>2.5% VOL = 25000 ppm</td></tr>
-                    <tr><td>一氧化碳</td><td>CO</td><td>12.5</td><td>74.2</td><td>12.5% VOL = 125000 ppm</td></tr>
+                    <tr><td>甲烷</td><td>CH4</td><td>5.0</td><td>15.0</td><td>5.0%VOL = 50000 ppm</td></tr>
+                    <tr><td>乙烷</td><td>C2H6</td><td>3.0</td><td>15.5</td><td>3.0%VOL = 30000 ppm</td></tr>
+                    <tr><td>丙烷</td><td>C3H8</td><td>2.1</td><td>9.5</td><td>2.1%VOL = 21000 ppm</td></tr>
+                    <tr><td>丁烷</td><td>C4H10</td><td>1.8</td><td>8.4</td><td>1.8%VOL = 18000 ppm</td></tr>
+                    <tr><td>氢气</td><td>H2</td><td>4.0</td><td>75.0</td><td>4.0%VOL = 40000 ppm</td></tr>
+                    <tr><td>乙烯</td><td>C2H4</td><td>2.7</td><td>36.0</td><td>2.7%VOL = 27000 ppm</td></tr>
+                    <tr><td>乙炔</td><td>C2H2</td><td>2.5</td><td>81.0</td><td>2.5%VOL = 25000 ppm</td></tr>
+                    <tr><td>一氧化碳</td><td>CO</td><td>12.5</td><td>74.2</td><td>12.5%VOL = 125000 ppm</td></tr>
                 </tbody>
             </table>
         </div>
@@ -348,11 +348,11 @@
         <!-- 计算公式 -->
         <h2>计算公式</h2>
         <div class="formula-box">
-            <span class="highlight">1 VOL% = 10000 ppm</span><br>
-            <span class="highlight">LEL% = VOL% / LEL(VOL%) x 100</span><br><br>
-            示例（甲烷，LEL = 5.0 VOL%）：<br>
-            &nbsp;&nbsp;10% LEL = 5.0% x 10% = 0.5 VOL% = 5000 ppm<br>
-            &nbsp;&nbsp;100% LEL = 5.0 VOL% = 50000 ppm
+            <span class="highlight">1 %VOL = 10000 ppm</span><br>
+            <span class="highlight">%LEL = %VOL / LEL(%VOL) x 100</span><br><br>
+            示例（甲烷，LEL = 5.0 %VOL）：<br>
+            &nbsp;&nbsp;10%LEL = 5.0% x 10% = 0.5%VOL = 5000 ppm<br>
+            &nbsp;&nbsp;100%LEL = 5.0%VOL = 50000 ppm
         </div>
 
         <footer>
@@ -361,7 +361,7 @@
     </div>
 
     <script>
-        // 气体数据：LEL 值（单位：VOL%）
+        // 气体数据：LEL 值（单位：%VOL）
         const GAS_DATA = {
             methane:    { name: '甲烷',     lel: 5.0  },
             ethane:     { name: '乙烷',     lel: 3.0  },

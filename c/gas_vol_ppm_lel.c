@@ -1,5 +1,5 @@
 /*
- * @Description  : 可燃气体 VOL%、ppm、LEL 换算工具（支持 8 种常见可燃气体）
+ * @Description  : 可燃气体 %VOL、ppm、%LEL 换算工具（支持 8 种常见可燃气体）
  * @Date         : 2023-02-20
  * @Author       : yzy
  *
@@ -17,8 +17,8 @@ typedef struct
 {
     const char *name;    /* 中文名 */
     const char *formula; /* 分子式 */
-    double lel;          /* 爆炸下限 VOL% */
-    double uel;          /* 爆炸上限 VOL% */
+    double lel;          /* 爆炸下限 %VOL */
+    double uel;          /* 爆炸上限 %VOL */
 } GasInfo;
 
 /* 8 种常见可燃气体数据 */
@@ -38,9 +38,9 @@ void print_gas_list(void)
 {
     printf("\n");
     printf("================================================================\n");
-    printf("             可燃气体 VOL%% / ppm / LEL 换算工具\n");
+    printf("             可燃气体 %%VOL / ppm / %%LEL 换算工具\n");
     printf("================================================================\n");
-    printf("  编号  气体名称      分子式    LEL(VOL%%)  UEL(VOL%%)\n");
+    printf("  编号  气体名称      分子式    LEL(%%VOL)  UEL(%%VOL)\n");
     printf("----------------------------------------------------------------\n");
     for (int i = 0; i < GAS_COUNT; i++)
     {
@@ -49,9 +49,9 @@ void print_gas_list(void)
                gas_table[i].lel, gas_table[i].uel);
     }
     printf("================================================================\n");
-    printf("  单位编号: 1=VOL%%   2=ppm   3=LEL%%\n");
+    printf("  单位编号: 1=%%VOL   2=ppm   3=%%LEL\n");
     printf("  输入格式: <气体编号> <单位编号> <值>\n");
-    printf("  示例: 1 1 5.0  →  甲烷 VOL%%=5.0, 计算 ppm 和 LEL%%\n");
+    printf("  示例: 1 1 5.0  →  甲烷 %%VOL=5.0, 计算 ppm 和 %%LEL\n");
     printf("================================================================\n\n");
 }
 
@@ -74,7 +74,7 @@ void convert(int gas_idx, int unit_idx, double value)
 
     switch (unit_idx)
     {
-    case 1: /* 输入 VOL% */
+    case 1: /* 输入 %VOL */
         vol = value;
         ppm = vol * 10000;
         lel = (gas->lel > 0) ? (vol / gas->lel * 100) : 0;
@@ -84,7 +84,7 @@ void convert(int gas_idx, int unit_idx, double value)
         vol = ppm / 10000;
         lel = (gas->lel > 0) ? (vol / gas->lel * 100) : 0;
         break;
-    case 3: /* 输入 LEL% */
+    case 3: /* 输入 %LEL */
         lel = value;
         vol = lel * gas->lel / 100;
         ppm = vol * 10000;
@@ -94,9 +94,9 @@ void convert(int gas_idx, int unit_idx, double value)
     }
 
     printf("\n  [%s (%s)]\n", gas->name, gas->formula);
-    printf("  VOL%% = %.4f\n", vol);
+    printf("  %%VOL = %.4f\n", vol);
     printf("  ppm   = %.2f\n", ppm);
-    printf("  LEL%%  = %.4f\n\n", lel);
+    printf("  %%LEL  = %.4f\n\n", lel);
 }
 
 int main(void)
