@@ -1,237 +1,168 @@
+"""
+可燃气体 VOL%、ppm、LEL 换算工具（支持 8 种常见可燃气体）
+
+气体数据:
+    甲烷(CH4)     LEL=5.0%  UEL=15.0%
+    乙烷(C2H6)    LEL=3.0%  UEL=15.5%
+    丙烷(C3H8)    LEL=2.1%  UEL=9.5%
+    丁烷(C4H10)   LEL=1.8%  UEL=8.4%
+    氢气(H2)      LEL=4.0%  UEL=75.0%
+    乙烯(C2H4)    LEL=2.7%  UEL=36.0%
+    乙炔(C2H2)    LEL=2.5%  UEL=81.0%
+    一氧化碳(CO)  LEL=12.5% UEL=74.2%
+
+公式:
+    1 VOL% = 10000 ppm
+    LEL% = VOL% / LEL(VOL%) * 100
+"""
+
 import tkinter as tk
 from tkinter import messagebox
-# 计算LEL、VOL%和ppm
 
-"""
-//                 爆炸浓度 (V%)
-// 物质名称	分子式	下限 LEL	上限 UEL
-// 甲烷	    CH4	    5	        15
-// 乙烷	    C2H6	3	        15.5
-// 丙烷	    C3H8	2.1	        9.5
-
-// 甲烷的爆炸下限为 5.0VOL%，即 100% LEL=5.0VOL%
-// 那么 10% LEL = 5.0VOL% * 10% = 0.5 VOL%
-// 10000 ppm = 1 Vol%
-"""
-
-# 计算
-def calculate():
-    gas_type = variable.get()
-    try:
-        if gas_type == "甲烷":
-            if entry_lel.get():
-                lel = float(entry_lel.get())
-                vol = lel * 0.05
-                ppm = vol * 10000
-            elif entry_vol.get():
-                vol = float(entry_vol.get())
-                lel = vol / 0.05
-                ppm = vol * 10000
-            elif entry_ppm.get():
-                ppm = float(entry_ppm.get())
-                vol = ppm / 10000
-                lel = vol / 0.05
-            else:
-                lel, vol, ppm = 0, 0, 0
-
-        elif gas_type == "乙烷":
-            if entry_lel.get():
-                lel = float(entry_lel.get())
-                vol = lel * 0.03
-                ppm = vol * 10000
-            elif entry_vol.get():
-                vol = float(entry_vol.get())
-                lel = vol / 0.03
-                ppm = vol * 10000
-            elif entry_ppm.get():
-                ppm = float(entry_ppm.get())
-                vol = ppm / 10000
-                lel = vol / 0.03
-            else:
-                lel, vol, ppm = 0, 0, 0
-
-        elif gas_type == "丙烷":
-            if entry_lel.get():
-                lel = float(entry_lel.get())
-                vol = lel * 0.021
-                ppm = vol * 10000
-            elif entry_vol.get():
-                vol = float(entry_vol.get())
-                lel = vol / 0.021
-                ppm = vol * 10000
-            elif entry_ppm.get():
-                ppm = float(entry_ppm.get())
-                vol = ppm / 10000
-                lel = vol / 0.021
-            else:
-                lel, vol, ppm = 0, 0, 0
-
-        else:
-            lel, vol, ppm = 0, 0, 0
-
-        entry_lel.delete(0, tk.END)
-        entry_lel.insert(tk.END, str(round(lel, 4)))
-        entry_vol.delete(0, tk.END)
-        entry_vol.insert(tk.END, str(round(vol, 4)))
-        entry_ppm.delete(0, tk.END)
-        entry_ppm.insert(tk.END, str(round(ppm, 4)))
-
-    except ValueError:
-        entry_lel.delete(0, tk.END)
-        entry_vol.delete(0, tk.END)
-        entry_ppm.delete(0, tk.END)
-        entry_lel.insert(tk.END, "Error")
-        entry_vol.insert(tk.END, "Error")
-        entry_ppm.insert(tk.END, "Error")
+# 气体数据：(名称, 分子式, LEL VOL%, UEL VOL%)
+GAS_DATA = {
+    "甲烷(CH4)":     (5.0,  15.0),
+    "乙烷(C2H6)":    (3.0,  15.5),
+    "丙烷(C3H8)":    (2.1,  9.5),
+    "丁烷(C4H10)":   (1.8,  8.4),
+    "氢气(H2)":      (4.0,  75.0),
+    "乙烯(C2H4)":    (2.7,  36.0),
+    "乙炔(C2H2)":    (2.5,  81.0),
+    "一氧化碳(CO)":  (12.5, 74.2),
+}
 
 
-# 清除所有输入和结果
-def clear():
-    entry_lel.delete(0, tk.END)
-    entry_vol.delete(0, tk.END)
-    entry_ppm.delete(0, tk.END)
+def calculate(gas_name, input_value, input_unit):
+    """根据输入气体、数值和单位，计算另外两个单位的值"""
+    lel_limit, _ = GAS_DATA[gas_name]
 
-# 显示帮助信息
-def show_help():
-    help_text = """
-燃气爆炸下限计算器
+    if input_unit == "ppm":
+        ppm = input_value
+        vol = ppm / 10000
+        lel = vol / lel_limit * 100
+    elif input_unit == "LEL%":
+        lel = input_value
+        vol = lel * lel_limit / 100
+        ppm = vol * 10000
+    else:  # VOL%
+        vol = input_value
+        ppm = vol * 10000
+        lel = vol / lel_limit * 100
 
-计算三种气体（甲烷、乙烷、丙烷）的爆炸下限（LEL）、体积百分比（VOL%）和百万分之一体积（ppm）之间的转换关系。
+    return round(vol, 4), round(ppm, 2), round(lel, 4)
 
-爆炸浓度 (V%)
-物质名称    分子式   下限 LEL   上限 UEL
-甲烷        CH4         5          15
-乙烷        C2H6        3          15.5
-丙烷       C3H8        2.1        9.5
 
-例如，甲烷的爆炸下限为 5.0VOL%，即 100% LEL=5.0VOL%
-那么 10% LEL = 5.0VOL% * 10% = 0.5 VOL%
-10000 ppm = 1 Vol%
+class GasConverterApp:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("可燃气体 VOL% / ppm / LEL 换算工具")
+        self.root.geometry("420x420")
+        self.root.resizable(False, False)
 
-计算公式：
-甲烷：LEL = VOL% * 0.05，VOL% = LEL / 0.05，ppm = VOL% * 10000
-乙烷：LEL = VOL% * 0.03，VOL% = LEL / 0.03，ppm = VOL% * 10000
-丙烷：LEL = VOL% * 0.021，VOL% = LEL / 0.021，ppm = VOL% * 10000
+        self._create_menu()
+        self._create_widgets()
 
-使用方法：
-1. 选择气体类型。
-2. 输入已知值（LEL、VOL%或ppm）。
-3. 点击“计算”按钮，即可自动计算其他两个值。
-4. 若要清除所有输入和结果，点击“清除”按钮。
-5. 若要调整页面大小，请点击菜单栏中的“设置”。
+        # 回车键触发计算
+        self.root.bind('<Return>', lambda e: self.perform_calculation())
 
-注意事项：
-- 请在输入框中只输入数字。
-- 计算结果保留小数点后四位。
+    def _create_menu(self):
+        menu_bar = tk.Menu(self.root)
+        self.root.config(menu=menu_bar)
+        help_menu = tk.Menu(menu_bar, tearoff=0)
+        menu_bar.add_cascade(label="帮助", menu=help_menu)
+        help_menu.add_command(label="关于", command=self.show_help)
 
-有任何问题，请点击菜单栏中的“帮助”查看帮助信息。
-"""
-    messagebox.showinfo("帮助", help_text)
+    def _create_widgets(self):
+        # 气体类型
+        tk.Label(self.root, text="气体类型:", font=("Arial", 10, "bold")).pack(pady=(10, 2))
+        self.gas_var = tk.StringVar(value=list(GAS_DATA.keys())[0])
+        tk.OptionMenu(self.root, self.gas_var, *GAS_DATA.keys()).pack()
 
-"""
-# 设置页面
-def settings():
-    def apply_settings():
+        # 输入区域
+        input_frame = tk.Frame(self.root)
+        input_frame.pack(pady=10)
+
+        tk.Label(input_frame, text="输入值:").pack(side=tk.LEFT)
+        self.entry_input = tk.Entry(input_frame, width=12)
+        self.entry_input.pack(side=tk.LEFT, padx=5)
+
+        tk.Label(input_frame, text="单位:").pack(side=tk.LEFT)
+        self.unit_var = tk.StringVar(value="VOL%")
+        tk.OptionMenu(input_frame, self.unit_var, "VOL%", "ppm", "LEL%").pack(side=tk.LEFT)
+
+        # 结果显示
+        result_frame = tk.Frame(self.root)
+        result_frame.pack(pady=10)
+
+        self.result_vol = self._create_result_row(result_frame, "VOL%:")
+        self.result_ppm = self._create_result_row(result_frame, "ppm:")
+        self.result_lel = self._create_result_row(result_frame, "LEL%:")
+
+        # 按钮
+        btn_frame = tk.Frame(self.root)
+        btn_frame.pack(pady=15)
+        tk.Button(btn_frame, text="计算", command=self.perform_calculation, width=8).pack(side=tk.LEFT, padx=5)
+        tk.Button(btn_frame, text="清除", command=self.clear, width=8).pack(side=tk.LEFT, padx=5)
+
+    def _create_result_row(self, parent, label_text):
+        frame = tk.Frame(parent)
+        frame.pack(fill=tk.X, pady=2)
+        tk.Label(frame, text=label_text, width=8, anchor=tk.E).pack(side=tk.LEFT)
+        entry = tk.Entry(frame, state=tk.DISABLED, fg="black", width=20)
+        entry.pack(side=tk.LEFT, padx=5)
+        return entry
+
+    def _set_result(self, entry, value):
+        entry.config(state=tk.NORMAL)
+        entry.delete(0, tk.END)
+        entry.insert(tk.END, str(value))
+        entry.config(state=tk.DISABLED)
+
+    def perform_calculation(self):
         try:
-            new_width = int(width_entry.get())
-            new_height = int(height_entry.get())
-            if 100 <= new_width <= 800 and 100 <= new_height <= 600:
-                root.geometry(f"{new_width}x{new_height}")
-                current_width_label.config(text=f"当前宽度：{new_width}")
-                current_height_label.config(text=f"当前高度：{new_height}")
-                max_width_label.config(text=f"最大宽度：{new_width}")
-                max_height_label.config(text=f"最大高度：{new_height}")
-                settings_window.destroy()
-            else:
-                messagebox.showerror("错误", "请输入在范围内的宽度和高度（宽度：100-800，高度：100-600）！")
+            input_value = float(self.entry_input.get())
         except ValueError:
-            messagebox.showerror("错误", "请输入有效的宽度和高度！")
+            messagebox.showerror("错误", "请输入有效的数值")
+            return
 
-    settings_window = tk.Toplevel(root)
-    settings_window.title("页面设置")
-    settings_window.geometry("400x200")
+        gas_name = self.gas_var.get()
+        input_unit = self.unit_var.get()
 
-    current_width_label = tk.Label(settings_window, text=f"当前宽度：{root.winfo_width()}")
-    current_width_label.pack()
+        vol, ppm, lel = calculate(gas_name, input_value, input_unit)
 
-    current_height_label = tk.Label(settings_window, text=f"当前高度：{root.winfo_height()}")
-    current_height_label.pack()
+        self._set_result(self.result_vol, vol)
+        self._set_result(self.result_ppm, ppm)
+        self._set_result(self.result_lel, lel)
 
-    max_width_label = tk.Label(settings_window, text=f"最大宽度：{root.winfo_screenwidth()}")
-    max_width_label.pack()
+    def clear(self):
+        self.entry_input.delete(0, tk.END)
+        for entry in (self.result_vol, self.result_ppm, self.result_lel):
+            self._set_result(entry, "")
 
-    max_height_label = tk.Label(settings_window, text=f"最大高度：{root.winfo_screenheight()}")
-    max_height_label.pack()
+    def show_help(self):
+        help_text = """可燃气体 VOL% / ppm / LEL 换算工具
 
-    width_label = tk.Label(settings_window, text="宽度：")
-    width_label.pack()
-    width_entry = tk.Entry(settings_window)
-    width_entry.pack()
+支持 8 种常见可燃气体:
+  甲烷(CH4)     LEL=5.0%  UEL=15.0%
+  乙烷(C2H6)    LEL=3.0%  UEL=15.5%
+  丙烷(C3H8)    LEL=2.1%  UEL=9.5%
+  丁烷(C4H10)   LEL=1.8%  UEL=8.4%
+  氢气(H2)      LEL=4.0%  UEL=75.0%
+  乙烯(C2H4)    LEL=2.7%  UEL=36.0%
+  乙炔(C2H2)    LEL=2.5%  UEL=81.0%
+  一氧化碳(CO)  LEL=12.5% UEL=74.2%
 
-    height_label = tk.Label(settings_window, text="高度：")
-    height_label.pack()
-    height_entry = tk.Entry(settings_window)
-    height_entry.pack()
+公式:
+  1 VOL% = 10000 ppm
+  LEL% = VOL% / LEL(VOL%) x 100
 
-    apply_button = tk.Button(settings_window, text="应用", command=apply_settings)
-    apply_button.pack()
-"""
+示例(甲烷):
+  10% LEL = 5.0% x 10% = 0.5 VOL% = 5000 ppm
+  100% LEL = 5.0 VOL% = 50000 ppm"""
+        messagebox.showinfo("帮助", help_text)
 
-# 创建主窗口
-root = tk.Tk()
-root.title("燃气爆炸下限计算器")
-root.geometry("400x300")
 
-# 创建菜单栏
-menu_bar = tk.Menu(root)
-root.config(menu=menu_bar)
-
-# 创建“帮助”菜单
-help_menu = tk.Menu(menu_bar)
-menu_bar.add_cascade(label="帮助", command=show_help)
-
-"""
-# 创建“设置”菜单
-settings_menu = tk.Menu(menu_bar)
-menu_bar.add_cascade(label="设置", menu=settings_menu)
-settings_menu.add_command(label="调整页面大小", command=settings)
-"""
-
-# 气体类型下拉菜单
-label_gas_type = tk.Label(root, text="气体类型：")
-label_gas_type.pack()
-gas_types = ["甲烷", "乙烷", "丙烷"]
-variable = tk.StringVar(root)
-variable.set(gas_types[0])
-gas_type_menu = tk.OptionMenu(root, variable, *gas_types)
-gas_type_menu.pack()
-
-# 输入LEL
-label_lel = tk.Label(root, text="LEL (Lower Explosive Limit):")
-label_lel.pack()
-entry_lel = tk.Entry(root)
-entry_lel.pack()
-
-# 输入VOL%
-label_vol = tk.Label(root, text="VOL% (Volume Percentage):")
-label_vol.pack()
-entry_vol = tk.Entry(root)
-entry_vol.pack()
-
-# 输入ppm
-label_ppm = tk.Label(root, text="ppm (Parts Per Million):")
-label_ppm.pack()
-entry_ppm = tk.Entry(root)
-entry_ppm.pack()
-
-# 计算和清除按钮
-button_frame = tk.Frame(root)
-button_frame.pack()
-
-calculate_button = tk.Button(button_frame, text="计算", command=calculate)
-calculate_button.pack(side=tk.LEFT, padx=5)
-
-clear_button = tk.Button(button_frame, text="清除", command=clear)
-clear_button.pack(side=tk.LEFT, padx=5)
-
-root.mainloop()
+if __name__ == "__main__":
+    root = tk.Tk()
+    app = GasConverterApp(root)
+    root.mainloop()

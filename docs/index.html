@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>可燃气体 VOL% / ppm / LEL 换算工具</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #e8985a 0%, #c0392b 50%, #8e44ad 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.25);
+            padding: 30px;
+        }
+        h1 {
+            text-align: center;
+            color: #2d3748;
+            margin-bottom: 8px;
+            font-size: 2rem;
+            background: linear-gradient(120deg, #e67e22, #c0392b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .subtitle {
+            text-align: center;
+            color: #718096;
+            margin-bottom: 30px;
+            font-size: 0.95rem;
+        }
+        .links {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .links a {
+            margin: 0 15px;
+            color: #333;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .links a:hover {
+            text-decoration: underline;
+        }
+        h2 {
+            color: #4a5568;
+            margin: 25px 0 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e2e8f0;
+            font-size: 1.3rem;
+        }
+
+        /* 表单 */
+        .form-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 20px;
+            align-items: flex-end;
+        }
+        .form-item {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            flex: 1;
+            min-width: 150px;
+        }
+        .form-item label {
+            font-weight: 600;
+            color: #4a5568;
+            font-size: 14px;
+        }
+        select, input[type="number"], input[type="text"] {
+            padding: 10px 14px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            background: white;
+            height: 42px;
+            width: 100%;
+        }
+        select:focus, input:focus {
+            outline: none;
+            border-color: #e67e22;
+            box-shadow: 0 0 0 3px rgba(230, 126, 34, 0.2);
+        }
+        input[readonly] {
+            background: #f7fafc;
+            color: #2d3748;
+            font-weight: 600;
+            cursor: default;
+        }
+
+        /* 按钮 */
+        .action-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        button {
+            padding: 12px 24px;
+            background: linear-gradient(120deg, #e67e22, #c0392b);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(230, 126, 34, 0.4);
+        }
+        button:active {
+            transform: translateY(0);
+        }
+        .btn-clear {
+            background: linear-gradient(120deg, #95a5a6, #7f8c8d);
+        }
+        .btn-clear:hover {
+            box-shadow: 0 5px 20px rgba(149, 165, 166, 0.4);
+        }
+
+        /* 结果区域 */
+        .result-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .result-card {
+            background: linear-gradient(135deg, #f6f8fb, #eef2f7);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            border-left: 4px solid #e67e22;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+        }
+        .result-card .label {
+            font-size: 13px;
+            color: #718096;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .result-card .value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #2d3748;
+            margin: 8px 0 4px;
+        }
+        .result-card .unit {
+            font-size: 12px;
+            color: #a0aec0;
+        }
+
+        /* 参考表格 */
+        .table-container {
+            overflow-x: auto;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            min-width: 500px;
+        }
+        th, td {
+            padding: 10px 14px;
+            text-align: center;
+            border: 1px solid #e2e8f0;
+            font-size: 14px;
+        }
+        th {
+            background: linear-gradient(120deg, #e67e22, #c0392b);
+            color: white;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        tr:nth-child(even) {
+            background: #f8fafc;
+        }
+        tr:hover {
+            background: #fff5f0;
+        }
+
+        /* 公式说明 */
+        .formula-box {
+            background: #f8f9fa;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 16px 20px;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            color: #4a5568;
+            line-height: 1.8;
+        }
+        .formula-box .highlight {
+            color: #c0392b;
+            font-weight: 700;
+        }
+
+        /* 页脚 */
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e2e8f0;
+            color: #a0aec0;
+            font-size: 13px;
+        }
+        footer a {
+            color: #e67e22;
+            text-decoration: none;
+        }
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* 响应式 */
+        @media (max-width: 600px) {
+            .container {
+                padding: 15px;
+            }
+            h1 {
+                font-size: 1.5rem;
+            }
+            .form-group {
+                flex-direction: column;
+                gap: 12px;
+            }
+            .form-item {
+                min-width: 100%;
+            }
+            .result-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>可燃气体 VOL% / ppm / LEL 换算工具</h1>
+        <p class="subtitle">支持甲烷、乙烷、丙烷等常见可燃气体的浓度单位互转</p>
+        <div class="links">
+            <a href="https://github.com/stark1898y/Gas_VOL_ppm_LEL" target="_blank">GitHub</a>
+        </div>
+
+        <!-- 换算工具 -->
+        <h2>浓度换算</h2>
+        <div class="form-group">
+            <div class="form-item">
+                <label>气体类型</label>
+                <select id="gasType">
+                    <option value="methane">甲烷 (CH4)</option>
+                    <option value="ethane">乙烷 (C2H6)</option>
+                    <option value="propane">丙烷 (C3H8)</option>
+                    <option value="butane">丁烷 (C4H10)</option>
+                    <option value="hydrogen">氢气 (H2)</option>
+                    <option value="ethylene">乙烯 (C2H4)</option>
+                    <option value="acetylene">乙炔 (C2H2)</option>
+                    <option value="co">一氧化碳 (CO)</option>
+                </select>
+            </div>
+            <div class="form-item">
+                <label>输入值</label>
+                <input type="number" id="inputValue" step="any" placeholder="请输入数值">
+            </div>
+            <div class="form-item">
+                <label>输入单位</label>
+                <select id="inputUnit">
+                    <option value="vol">VOL%</option>
+                    <option value="ppm">ppm</option>
+                    <option value="lel">LEL%</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="action-buttons">
+            <button onclick="calculate()">计算</button>
+            <button onclick="clearAll()" class="btn-clear">清除</button>
+        </div>
+
+        <div class="result-grid" id="resultGrid" style="display:none;">
+            <div class="result-card">
+                <div class="label">VOL%</div>
+                <div class="value" id="resultVol">-</div>
+                <div class="unit">体积百分比</div>
+            </div>
+            <div class="result-card">
+                <div class="label">ppm</div>
+                <div class="value" id="resultPpm">-</div>
+                <div class="unit">百万分之一体积</div>
+            </div>
+            <div class="result-card">
+                <div class="label">LEL%</div>
+                <div class="value" id="resultLel">-</div>
+                <div class="unit">爆炸下限百分比</div>
+            </div>
+        </div>
+
+        <!-- 气体参数参考表 -->
+        <h2>常见可燃气体参数</h2>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>气体名称</th>
+                        <th>分子式</th>
+                        <th>LEL (VOL%)</th>
+                        <th>UEL (VOL%)</th>
+                        <th>100% LEL =</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>甲烷</td><td>CH4</td><td>5.0</td><td>15.0</td><td>5.0% VOL = 50000 ppm</td></tr>
+                    <tr><td>乙烷</td><td>C2H6</td><td>3.0</td><td>15.5</td><td>3.0% VOL = 30000 ppm</td></tr>
+                    <tr><td>丙烷</td><td>C3H8</td><td>2.1</td><td>9.5</td><td>2.1% VOL = 21000 ppm</td></tr>
+                    <tr><td>丁烷</td><td>C4H10</td><td>1.8</td><td>8.4</td><td>1.8% VOL = 18000 ppm</td></tr>
+                    <tr><td>氢气</td><td>H2</td><td>4.0</td><td>75.0</td><td>4.0% VOL = 40000 ppm</td></tr>
+                    <tr><td>乙烯</td><td>C2H4</td><td>2.7</td><td>36.0</td><td>2.7% VOL = 27000 ppm</td></tr>
+                    <tr><td>乙炔</td><td>C2H2</td><td>2.5</td><td>81.0</td><td>2.5% VOL = 25000 ppm</td></tr>
+                    <tr><td>一氧化碳</td><td>CO</td><td>12.5</td><td>74.2</td><td>12.5% VOL = 125000 ppm</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 计算公式 -->
+        <h2>计算公式</h2>
+        <div class="formula-box">
+            <span class="highlight">1 VOL% = 10000 ppm</span><br>
+            <span class="highlight">LEL% = VOL% / LEL(VOL%) x 100</span><br><br>
+            示例（甲烷，LEL = 5.0 VOL%）：<br>
+            &nbsp;&nbsp;10% LEL = 5.0% x 10% = 0.5 VOL% = 5000 ppm<br>
+            &nbsp;&nbsp;100% LEL = 5.0 VOL% = 50000 ppm
+        </div>
+
+        <footer>
+            <p>Gas VOL ppm LEL Calculator &copy; 2023 stark1898y | <a href="https://github.com/stark1898y/Gas_VOL_ppm_LEL" target="_blank">GitHub</a> | MIT License</p>
+        </footer>
+    </div>
+
+    <script>
+        // 气体数据：LEL 值（单位：VOL%）
+        const GAS_DATA = {
+            methane:    { name: '甲烷',     lel: 0.05  },
+            ethane:     { name: '乙烷',     lel: 0.03  },
+            propane:    { name: '丙烷',     lel: 0.021 },
+            butane:     { name: '丁烷',     lel: 0.018 },
+            hydrogen:   { name: '氢气',     lel: 0.04  },
+            ethylene:   { name: '乙烯',     lel: 0.027 },
+            acetylene:  { name: '乙炔',     lel: 0.025 },
+            co:         { name: '一氧化碳', lel: 0.125 }
+        };
+
+        function calculate() {
+            const gasType = document.getElementById('gasType').value;
+            const inputVal = parseFloat(document.getElementById('inputValue').value);
+            const inputUnit = document.getElementById('inputUnit').value;
+
+            if (isNaN(inputVal)) {
+                alert('请输入有效的数值');
+                return;
+            }
+
+            const gas = GAS_DATA[gasType];
+            let vol, ppm, lel;
+
+            if (inputUnit === 'vol') {
+                vol = inputVal;
+                ppm = vol * 10000;
+                lel = vol / gas.lel * 100;
+            } else if (inputUnit === 'ppm') {
+                ppm = inputVal;
+                vol = ppm / 10000;
+                lel = vol / gas.lel * 100;
+            } else {
+                lel = inputVal;
+                vol = lel * gas.lel / 100;
+                ppm = vol * 10000;
+            }
+
+            document.getElementById('resultVol').textContent = formatNum(vol);
+            document.getElementById('resultPpm').textContent = formatNum(ppm);
+            document.getElementById('resultLel').textContent = formatNum(lel);
+            document.getElementById('resultGrid').style.display = 'grid';
+        }
+
+        function formatNum(val) {
+            if (Math.abs(val) >= 10000) return val.toFixed(1);
+            if (Math.abs(val) >= 100) return val.toFixed(2);
+            if (Math.abs(val) >= 1) return val.toFixed(4);
+            return val.toFixed(6);
+        }
+
+        function clearAll() {
+            document.getElementById('inputValue').value = '';
+            document.getElementById('resultGrid').style.display = 'none';
+        }
+
+        // 回车键触发计算
+        document.getElementById('inputValue').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') calculate();
+        });
+    </script>
+</body>
+</html>

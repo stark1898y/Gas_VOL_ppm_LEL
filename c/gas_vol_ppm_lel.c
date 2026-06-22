@@ -1,209 +1,135 @@
 /*
+ * @Description  : 可燃气体 VOL%、ppm、LEL 换算工具（支持 8 种常见可燃气体）
+ * @Date         : 2023-02-20
  * @Author       : yzy
- * @Date         : 2023-02-20 15:55:43
- * @LastEditors: xt 1834031381@qq.com
- * @LastEditTime: 2023-08-11 14:45:41
- * @FilePath: \undefinedc:\Users\XT\Desktop\Gas_VOL_ppm_LEL\c\gas_vol_ppm_lel.c
- * @Description  :  VOL、ppm、LEL
  *
  * Copyright (c) 2023 by yzy, All Rights Reserved.
  */
 
 #include <stdio.h>
-#include <windows.h>
+#include <stdlib.h>
+#include <string.h>
 
-#define METHANE_LEL 0.05
-#define ETHANCE_LEL 0.03
-#define PROPANCE_LEL 0.021
+#define GAS_COUNT 8
 
-typedef enum
+/* 气体数据结构 */
+typedef struct
 {
-    kMethane = 1,
-    kEthance,
-    kPropance
-} TeGasNumber;
+    const char *name;    /* 中文名 */
+    const char *formula; /* 分子式 */
+    double lel;          /* 爆炸下限 VOL% */
+    double uel;          /* 爆炸上限 VOL% */
+} GasInfo;
 
-typedef enum
+/* 8 种常见可燃气体数据 */
+static const GasInfo gas_table[GAS_COUNT] = {
+    {"甲烷",     "CH4",  5.0,  15.0},
+    {"乙烷",     "C2H6", 3.0,  15.5},
+    {"丙烷",     "C3H8", 2.1,  9.5},
+    {"丁烷",     "C4H10",1.8,  8.4},
+    {"氢气",     "H2",   4.0,  75.0},
+    {"乙烯",     "C2H4", 2.7,  36.0},
+    {"乙炔",     "C2H2", 2.5,  81.0},
+    {"一氧化碳", "CO",   12.5, 74.2},
+};
+
+/* 打印气体列表 */
+void print_gas_list(void)
 {
-    kVol = 1,
-    kLel,
-    kPpm
-} TeGasValue;
+    printf("\n");
+    printf("================================================================\n");
+    printf("             可燃气体 VOL%% / ppm / LEL 换算工具\n");
+    printf("================================================================\n");
+    printf("  编号  气体名称      分子式    LEL(VOL%%)  UEL(VOL%%)\n");
+    printf("----------------------------------------------------------------\n");
+    for (int i = 0; i < GAS_COUNT; i++)
+    {
+        printf("  %-4d  %-10s  %-6s    %-8.1f    %-8.1f\n",
+               i + 1, gas_table[i].name, gas_table[i].formula,
+               gas_table[i].lel, gas_table[i].uel);
+    }
+    printf("================================================================\n");
+    printf("  单位编号: 1=VOL%%   2=ppm   3=LEL%%\n");
+    printf("  输入格式: <气体编号> <单位编号> <值>\n");
+    printf("  示例: 1 1 5.0  →  甲烷 VOL%%=5.0, 计算 ppm 和 LEL%%\n");
+    printf("================================================================\n\n");
+}
 
-void UI_GasIntroduce(void);
-int IsValid(int gas_num);
-void GasChange(int number, double value);
-double LEL_GasGet(int gas_name);
-void GasChangeOtherValue(int change_num, double gas_lel, double value);
+/* 从任意一种单位计算另外两种 */
+void convert(int gas_idx, int unit_idx, double value)
+{
+    if (gas_idx < 0 || gas_idx >= GAS_COUNT)
+    {
+        printf("  错误: 气体编号无效 (1-%d)\n", GAS_COUNT);
+        return;
+    }
+    if (unit_idx < 1 || unit_idx > 3)
+    {
+        printf("  错误: 单位编号无效 (1-3)\n");
+        return;
+    }
+
+    const GasInfo *gas = &gas_table[gas_idx];
+    double vol, ppm, lel;
+
+    switch (unit_idx)
+    {
+    case 1: /* 输入 VOL% */
+        vol = value;
+        ppm = vol * 10000;
+        lel = (gas->lel > 0) ? (vol / gas->lel * 100) : 0;
+        break;
+    case 2: /* 输入 ppm */
+        ppm = value;
+        vol = ppm / 10000;
+        lel = (gas->lel > 0) ? (vol / gas->lel * 100) : 0;
+        break;
+    case 3: /* 输入 LEL% */
+        lel = value;
+        vol = lel * gas->lel / 100;
+        ppm = vol * 10000;
+        break;
+    default:
+        return;
+    }
+
+    printf("\n  [%s (%s)]\n", gas->name, gas->formula);
+    printf("  VOL%% = %.4f\n", vol);
+    printf("  ppm   = %.2f\n", ppm);
+    printf("  LEL%%  = %.4f\n\n", lel);
+}
 
 int main(void)
 {
-    int gas_change_number;
-    double val;
+    int gas_idx, unit_idx;
+    double value;
 
-    // "c": "cd $dir && gcc -fexec-charset=GBK $fileName -o $fileNameWithoutExt && $dir$fileNameWithoutExt",
-    // SetConsoleOutputCP(65001);  //防止.exe中文乱码
-
-    UI_GasIntroduce();
+    print_gas_list();
 
     while (1)
     {
-        rewind(stdin);                                      // 清空缓冲区,防止输入字符出现死循环
-        if (scanf("%d %lf", &gas_change_number, &val) == 2) // 正确读取数字
+        printf("请输入 (气体编号 单位编号 值): ");
+        rewind(stdin);
+
+        if (scanf("%d %d %lf", &gas_idx, &unit_idx, &value) == 3)
         {
-            if (IsValid(gas_change_number) == 0) // 输入编号是否合理
+            if (gas_idx < 1 || gas_idx > GAS_COUNT)
             {
+                printf("  气体编号无效，请输入 1-%d\n", GAS_COUNT);
                 continue;
             }
-            else
+            if (unit_idx < 1 || unit_idx > 3)
             {
-                GasChange(gas_change_number, val);
-                printf("\r\n请输入气体编号和值,如\"11 6\"表示甲烷VOL=6,计算LEL值、PPM值\r\n");
+                printf("  单位编号无效，请输入 1-3\n");
+                continue;
             }
+            convert(gas_idx - 1, unit_idx, value);
         }
         else
         {
-            printf("\r\n输入有误,请重新输入气体编号和值,如\"11 6\"表示甲烷VOL=6,计算LEL值、PPM值\r\n");
+            printf("  输入格式错误，请按: 气体编号 单位编号 值\n");
         }
     }
 
     return 0;
-}
-
-/**
- * @description: 气体VOL、LEL、ppm转换对应编号
- * @return {*}
- */
-void UI_GasIntroduce(void)
-{
-    printf("/******************************************************************************/\r\n");
-    printf("              VOL、LEL、ppm转换表\r\n"
-           "           1:甲烷      2:乙烷      3:丙烷\r\n"
-           "1:VOL	    11          21	    31\r\n"
-           "2:LEL	    12	        22	    32\r\n"
-           "3:PPM       13	        23	    33\r\n"
-           "Tip:编号11,表示对甲烷VOL的值进行换算,即输入甲烷VOL的值并将其转换成对应的LEL值、PPM值。\r\n");
-    printf("/******************************************************************************/\r\n");
-    printf("\r\n请输入气体编号和值,如\"11 6\"表示甲烷VOL=6,计算LEL值、PPM值\r\n");
-}
-
-/**
- * @description: 编号是否有效，参考转换表
- * @param {int}  gas_num 编号
- * @return {*} 0:无效;1:有效;
- */
-int IsValid(int gas_num)
-{
-    int flag = 0;
-
-    if (gas_num >= 11 && gas_num <= 13)
-    {
-        flag = 1;
-    }
-    else if (gas_num >= 21 && gas_num <= 23)
-    {
-        flag = 1;
-    }
-    else if (gas_num >= 31 && gas_num <= 33)
-    {
-        flag = 1;
-    }
-
-    if (flag == 0)
-    {
-        printf("\r\n输入有误,请输入气体编号和值,如\"11 6\"表示甲烷VOL=6,计算LEL值、PPM值\r\n");
-    }
-
-    return flag;
-}
-
-/**
- * @description: 根据气体获取气体默认系数LEL，参考转换表，如1表示甲烷
- * @param {int}  gas_name，气体名称
- * @return {*} lel
- */
-double LEL_GasGet(int gas_name)
-{
-    double lel;
-    switch (gas_name)
-    {
-    case kMethane:
-        lel = METHANE_LEL;
-        printf("甲烷\r\n");
-        break;
-
-    case kEthance:
-        printf("乙烷\r\n");
-        lel = ETHANCE_LEL;
-        break;
-
-    case kPropance:
-        printf("丙烷\r\n");
-        lel = PROPANCE_LEL;
-        break;
-    default:
-        break;
-    }
-
-    return lel;
-}
-
-/**
- * @description: 参考转换表，如1表示输入气体VOL，计算LEL、PPM
- * @param {int} change_num  转换编号
- * @param {double} gas_lel 气体默认值LEL
- * @param {double} value  VOL、LEL、PPM输入值
- * @return {*}
- */
-void GasChangeOtherValue(int change_num, double gas_lel, double value)
-{
-
-    double vol, lel, ppm;
-    switch (change_num)
-    {
-    case kVol:
-        vol = value;
-        ppm = 10000 * vol;
-        lel = vol / gas_lel;
-        break;
-
-    case kLel:
-        lel = value;
-        vol = lel * gas_lel;
-        ppm = 10000 * vol;
-        break;
-
-    case kPpm:
-        ppm = value;
-        vol = ppm / 10000;
-        lel = vol / gas_lel;
-        break;
-
-    default:
-        break;
-    }
-
-    printf("VOL%% = %.4lf\r\n", vol);
-    printf("LEL = %.4lf\r\n", lel);
-    printf("PPM = %.4lf\r\n\r\n", ppm);
-}
-
-/**
- * @description: 参考转换表，如11表示通过甲烷输入VOL，获取LEL、PPM的值
- * @param {int} number 转换编号
- * @param {double} value VOL、LEL、PPM输入值，
- * @return {*}
- */
-void GasChange(int number, double value)
-{
-    int gas_number;
-    int change_number;
-    double gas_lel;
-    int a;
-
-    gas_number = number / 10;
-    change_number = number % 10;
-
-    gas_lel = LEL_GasGet(gas_number);
-    GasChangeOtherValue(change_number, gas_lel, value);
 }
