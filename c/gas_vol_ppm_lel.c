@@ -108,11 +108,20 @@ int main(void)
 
     while (1)
     {
+        int ret;
+        int c;
         printf("请输入 (气体编号 单位编号 值): ");
-        rewind(stdin);
 
-        if (scanf("%d %d %lf", &gas_idx, &unit_idx, &value) == 3)
+        ret = scanf("%d %d %lf", &gas_idx, &unit_idx, &value);
+        if (ret == EOF)
+            break; /* 输入结束（管道或重定向） */
+
+        if (ret == 3)
         {
+            /* 读取并丢弃当前行剩余字符，避免干扰下次输入 */
+            while ((c = getchar()) != '\n' && c != EOF)
+                ;
+
             if (gas_idx < 1 || gas_idx > GAS_COUNT)
             {
                 printf("  气体编号无效，请输入 1-%d\n", GAS_COUNT);
@@ -127,6 +136,9 @@ int main(void)
         }
         else
         {
+            /* 输入格式错误，清空当前行 */
+            while ((c = getchar()) != '\n' && c != EOF)
+                ;
             printf("  输入格式错误，请按: 气体编号 单位编号 值\n");
         }
     }
