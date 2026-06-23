@@ -11,6 +11,7 @@
 #include <string.h>
 
 #define GAS_COUNT 8
+#define VERSION "v2.1.0"
 
 /* 气体数据结构 */
 typedef struct
@@ -38,7 +39,10 @@ void print_gas_list(void)
 {
     printf("\n");
     printf("================================================================\n");
-    printf("             可燃气体 %%VOL / ppm / %%LEL 换算工具\n");
+    printf("         可燃气体 %%VOL / ppm / %%LEL 换算工具 %s\n", VERSION);
+    printf("         Gas VOL ppm LEL Calculator (c) 2023 stark1898y\n");
+    printf("         GitHub: https://github.com/stark1898y/Gas_VOL_ppm_LEL\n");
+    printf("         Gitee:  https://gitee.com/stark1898/Gas_VOL_ppm_LEL\n");
     printf("================================================================\n");
     printf("  编号  气体名称      分子式    LEL(%%VOL)  UEL(%%VOL)\n");
     printf("----------------------------------------------------------------\n");
