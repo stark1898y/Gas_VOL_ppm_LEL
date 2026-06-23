@@ -81,8 +81,8 @@ class GasConverterApp:
     def __init__(self, root):
         self.root = root
         self.root.title(f"可燃气体浓度换算工具 {VERSION}")
-        self.root.geometry("520x620")
-        self.root.resizable(False, False)
+        self.root.geometry("520x700")
+        self.root.minsize(420, 600)
         self.root.configure(bg=COLORS["bg"])
 
         # 设置图标
@@ -221,14 +221,13 @@ class GasConverterApp:
         self.warning_label.pack(fill=tk.X)
 
         # --- 底部信息 ---
-        footer = tk.Frame(self.root, bg=COLORS["bg"])
-        footer.pack(side=tk.BOTTOM, fill=tk.X, pady=(0, 10))
-        tk.Label(footer, text="1 %VOL = 10,000 ppm  |  %LEL = %VOL / LEL x 100",
+        formula_label = tk.Label(main_frame, text="1 %VOL = 10,000 ppm  |  %LEL = %VOL / LEL x 100",
                  font=("Microsoft YaHei UI", 8),
-                 fg=COLORS["text_light"], bg=COLORS["bg"]).pack()
+                 fg=COLORS["text_light"], bg=COLORS["bg"])
+        formula_label.pack(pady=(15, 4))
 
-        copyright_frame = tk.Frame(footer, bg=COLORS["bg"])
-        copyright_frame.pack(pady=(4, 0))
+        copyright_frame = tk.Frame(main_frame, bg=COLORS["bg"])
+        copyright_frame.pack()
         tk.Label(copyright_frame,
                  text=f"Gas VOL ppm LEL Calculator {VERSION} © 2023 stark1898y | ",
                  font=("Microsoft YaHei UI", 8),
